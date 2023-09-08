@@ -1,0 +1,57 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#define MAX_STACK_SIZE 10000
+int stack[MAX_STACK_SIZE];
+int top = -1;
+void push(int value) {
+    stack[++top] = value;
+}
+int pop() {
+    if (top == -1) {
+        printf("Stack underflow\n");
+        exit(1);
+    }
+    return stack[top--];
+}
+int evaluatePostfix(char* postfix) {
+    int i, operand1, operand2, result;
+    int length = strlen(postfix);
+    for (i = 0; i < length; i++) {
+        if (isdigit(postfix[i])) {
+            push(postfix[i] - '0');
+        } else if (postfix[i] == '+' || postfix[i] == '-' || postfix[i] == '*' || postfix[i] == '/' || postfix[i] == '^') {
+            operand2 = pop();
+            operand1 = pop();
+            switch (postfix[i]) {
+                case '+':
+                    push(operand1 + operand2);
+                    break;
+                case '-':
+                    push(operand1 - operand2);
+                    break;
+                case '*':
+                    push(operand1 * operand2);
+                    break;
+                case '/':
+                    push(operand1 / operand2);
+                    break;
+                case '^':
+                    push(operand1 ^ operand2);
+                    break;
+            }
+        }
+    }
+    result = pop();
+    return result;
+}
+int main() {
+    char postfix[MAX_STACK_SIZE];
+    printf("Enter the postfix expression: ");
+    fgets(postfix, sizeof(postfix), stdin);
+    postfix[strcspn(postfix, "\n")] = '\0'; // Remove the newline character
+    int result = evaluatePostfix(postfix);
+    printf("Result: %d\n", result);
+    return 0;
+}

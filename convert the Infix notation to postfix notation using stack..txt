@@ -1,0 +1,73 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#define MAX_SIZE 10000
+int precedence(char operator) {
+    switch (operator) {
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+            return 2;
+        case '^':
+            return 3;
+        default:
+            return -1;
+    }
+}
+int isOperator(char symbol) {
+    return (symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/' || symbol == '^');
+}
+char* infixToPostfix(char* infixExpression) {
+    int i, j;
+    int length = strlen(infixExpression);
+    char* postfixExpression = (char*)malloc(sizeof(char) * (length + 2));
+    char stack[MAX_SIZE];
+    int top = -1;
+    for (i = 0, j = 0; i < length; i++) {
+        if (infixExpression[i] == ' ' || infixExpression[i] == '\t') {
+            continue;
+        }
+        if (isalnum(infixExpression[i])) {
+            postfixExpression[j++] = infixExpression[i];
+        } else if (infixExpression[i] == '(') {
+            stack[++top] = infixExpression[i];
+        } else if (infixExpression[i] == ')') {
+            while (top > -1 && stack[top] != '(') {
+                postfixExpression[j++] = stack[top--];
+            }
+            if (top == -1 || stack[top] != '(') {
+                free(postfixExpression);
+                return "invalid";
+            } else {
+                top--;
+            }
+        } else if (isOperator(infixExpression[i])) {
+            while (top > -1 && precedence(stack[top]) >= precedence(infixExpression[i])) {
+                postfixExpression[j++] = stack[top--];
+            }
+            stack[++top] = infixExpression[i];
+        }
+    }
+    while (top > -1) {
+        if (stack[top] == '(') {
+            free(postfixExpression);
+            return "invalid";
+        }
+        postfixExpression[j++] = stack[top--];
+    }
+    postfixExpression[j] = '\0';
+    return postfixExpression;
+}
+int main() {
+    char infixExpression[MAX_SIZE];
+    printf("Enter the expression: ");
+    fgets(infixExpression, sizeof(infixExpression), stdin);
+    infixExpression[strcspn(infixExpression, "\n")] = '\0';
+    char* postfixExpression = infixToPostfix(infixExpression);
+    printf("%s\n", postfixExpression);
+    free(postfixExpression);
+    return 0;
+}
